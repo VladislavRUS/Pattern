@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Повтори звук!</title>
+    <script src="jquery-3.1.1.min.js"></script>
+    <script src="//cdn.jsdelivr.net/jquery.color-animation/1/mainfile"></script>
+    <script src="//cdn.jsdelivr.net/jquery.shadow-animation/1/mainfile"></script>
+
+    <style>
+        body {
+            background-color: black;
+        }
+
+        table {
+            position: relative;
+            top:50%;
+            left:50%;
+        }
+
+        table > div {
+            margin-left: 20px;
+            margin-bottom: 20px;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        table > div:hover {
+            box-shadow:0px 0px 30px white;
+        }
+
+        table > div:active {
+            box-shadow:0px 0px 70px white;
+        }
+
+        @keyframes generate {
+            from {
+                box-shadow:0px 0px 30px white;
+            }
+            to {
+                box-shadow:0px 0px 100px white;
+            }
+        }
+        .generatedDiv {
+            animation-duration: 0.5s;
+            animation-name: generate;
+            animation-direction: alternate;
+        }
+
+    </style>
+</head>
+<body>
+</body>
+    <script>
+
+        var colors = [
+            '673AB7', 'FF4081', 'F48FB1', 'BA68C8', 'F44336',
+            '00BCD4', '009688', 'CDDC39', '4CAF50', 'FF5722'
+        ];
+
+        const numberOfDivs = 3;
+        const divSize = 200;
+        const tableSize = (divSize + 30) * numberOfDivs;
+        const minGenerated = 2;
+        const maxGenerated = 5;
+        const gClass = 'generatedDiv';
+        const bg = 'background-color';
+        var score = 0;
+
+        var userInput = [];
+        var sequence = [];
+
+        function getRandomColor() {
+            return '#' + colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        (function createTable() {
+            var table = $('<table/>', {
+                id: 'soundTable'
+            });
+            table.css('width', tableSize);
+            table.css('height', tableSize);
+            table.css('margin-left', -(Math.floor(tableSize / 2)));
+            table.css('margin-right', -(Math.floor(tableSize / 2)));
+
+            var cnt = 0;
+            for (var i = 1; i <= numberOfDivs; i++) {
+                for (var j = 1; j <= numberOfDivs; j++) {
+                    var div = $('<div/>', { id: cnt++ });
+                    div.css('height', divSize);
+                    div.css('width', divSize);
+
+                    div.css(bg, getRandomColor());
+                    div.appendTo(table);
+                }
+                $('<br>').appendTo(table);
+            }
+            table.appendTo(document.body);
+        })();
+
+        function clearDivs() {
+            $('div').each(function() {
+                $(this).removeClass(gClass);
+            });
+        }
+
+        function generateSequence() {
+            switchColors();
+            clearDivs();
+
+            userInput = [];
+            sequence = [];
+
+            var i = 0;
+            var howMany = Math.floor(Math.random() * (maxGenerated - minGenerated) + minGenerated);
+
+
+            (function loop() {
+                setTimeout(function() {
+                    var ind = Math.floor(Math.random() * (numberOfDivs * numberOfDivs));
+                    $('#' + ind).addClass(gClass);
+                    setTimeout(function() {
+                        $('#' + ind).removeClass(gClass);
+                    }, 500);
+                    sequence.push(ind);
+                    i++;
+                    if (i < howMany) {
+                        loop();
+                    }
+                }, 1000);
+            })();
+
+        }
+
+        function switchColors() {
+            $('div').each(function() {
+                $(this).css(bg, getRandomColor());
+            });
+        }
+
+        $('table > div').bind('click', function() {
+            var id = $(this).attr('id');
+            userInput.push(id);
+            console.log(userInput);
+
+            if (userInput.length == sequence.length) {
+                for (var i = 0; i < userInput.length; i++) {
+                    if (userInput[i] != sequence[i]) {
+                        alert('Вы ошиблись!');
+                        generateSequence();
+                        return;
+                    }
+                }
+                alert('Вы угадали!');
+                generateSequence()
+            }
+        });
+
+        generateSequence();
+    </script>
+</html>
